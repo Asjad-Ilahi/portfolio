@@ -219,47 +219,43 @@ const RetroArcadePortfolioInner = () => {
 
   const { konamiActivated, setKonamiActivated, interactCard } = useContext(MissionContext)!;
 
+  // Play retro sound effect
+  const playSound = (frequency = 440, duration = 200, type: OscillatorType = 'square') => {
+    if (!soundEnabled || !audioContextRef.current) return;
+    const oscillator = audioContextRef.current.createOscillator();
+    const gainNode = audioContextRef.current.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContextRef.current.destination);
+    oscillator.frequency.setValueAtTime(frequency, audioContextRef.current.currentTime);
+    oscillator.type = type;
+    gainNode.gain.setValueAtTime(0.1, audioContextRef.current.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration / 1000);
+    oscillator.start(audioContextRef.current.currentTime);
+    oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
+  };
+
   useEffect(() => {
     const handleKonamiCode = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
         const newSequence = [...konamiCode, e.code].slice(-konamiSequence.length);
         setKonamiCode(newSequence);
-        
-        if (JSON.stringify(newSequence) === JSON.stringify(konamiSequence) && !konamiActivated) {
-          playSound(1500, 500, 'triangle');
+        if (
+          JSON.stringify(newSequence) === JSON.stringify(konamiSequence) &&
+          !konamiActivated
+        ) {
+          playSound(1500, 500, "triangle");
           setShowKonamiPopup(true);
           setKonamiActivated(true);
-          setScore(prev => prev + 1000);
+          setScore((prev) => prev + 1000);
           setShowKonamiSuccess(true);
           setTimeout(() => setShowKonamiSuccess(false), 3000);
           setKonamiCode([]);
         }
       }
     };
-
-    window.addEventListener('keydown', handleKonamiCode);
-    return () => window.removeEventListener('keydown', handleKonamiCode);
-  }, [konamiCode, soundEnabled, konamiActivated]);
-
-  // Play retro sound effect
-  const playSound = (frequency = 440, duration = 200, type: OscillatorType = 'square') => {
-    if (!soundEnabled || !audioContextRef.current) return;
-    
-    const oscillator = audioContextRef.current.createOscillator();
-    const gainNode = audioContextRef.current.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContextRef.current.destination);
-    
-    oscillator.frequency.setValueAtTime(frequency, audioContextRef.current.currentTime);
-    oscillator.type = type;
-    
-    gainNode.gain.setValueAtTime(0.1, audioContextRef.current.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration / 1000);
-    
-    oscillator.start(audioContextRef.current.currentTime);
-    oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
-  };
+    window.addEventListener("keydown", handleKonamiCode);
+    return () => window.removeEventListener("keydown", handleKonamiCode);
+  }, [konamiCode, konamiSequence, konamiActivated, playSound, setKonamiActivated]);
 
   // Award score for tab change only once
   const handleNavigation = (screen: string) => {
@@ -377,7 +373,7 @@ const RetroArcadePortfolioInner = () => {
   ];
   // Shuffle within each group for variety
   function shuffle<T>(array: T[]): T[] {
-    let arr = [...array];
+    const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -392,7 +388,7 @@ const RetroArcadePortfolioInner = () => {
 
   // Sample data
   const skills = [
-    { name: "Flutter", icon: <img src="https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000" alt="Flutter" className="w-10 h-10" />, level: 92, color: "text-blue-400" },
+    { name: "Flutter", icon: <Image src="https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000" alt="Flutter" width={40} height={40} className="w-10 h-10" />, level: 92, color: "text-blue-400" },
     { name: "Next.js", icon: <Image src="/next.svg" alt="Next.js" width={40} height={40} className="w-10 h-10" />, level: 90, color: "text-gray-400" },
     { name: "UI/UX", icon: <Image src="/ui-ux.png" alt="UI/UX" width={40} height={40} className="w-10 h-10" />, level: 88, color: "text-pink-400" },
     { name: "MERN", icon: <Image src="/logo.png" alt="MERN" width={40} height={40} className="w-10 h-10" />, level: 89, color: "text-green-400" },
@@ -575,7 +571,7 @@ const RetroArcadePortfolioInner = () => {
               SUBMIT
             </button>
           </form>
-          <p className="mt-4 text-gray-400 text-[10px]">Hint 1: Search for highlighted letters in headings across the site...</p>
+          <p className="mt-4 text-gray-400 text-[10px]">Hint 1: Search for highlighted letters in headings across the site&hellip;</p>
           <p className="mt-1 text-gray-400 text-[10px]">Hint 2: The word is related to something we eat maybe a fruit?</p>
         </div>
       </motion.div>
@@ -585,8 +581,8 @@ const RetroArcadePortfolioInner = () => {
   // Mission Vault Screen Component
   const MissionVaultScreen = () => {
     const {
-      missionUnlocked, setMissionUnlocked, playerName, setPlayerName,
-      isMissionComplete, addToLeaderboard, leaderboard,
+      missionUnlocked, /* setMissionUnlocked, */ playerName, setPlayerName,
+      /* isMissionComplete, */ addToLeaderboard, leaderboard,
       vaultClosed, setVaultClosed
     } = useContext(MissionContext)!;
     const [isOpen, setIsOpen] = useState(false);
@@ -609,7 +605,7 @@ const RetroArcadePortfolioInner = () => {
         const idx = sorted.findIndex(entry => entry.name === playerName && entry.score === score);
         setUserRank(idx >= 0 ? idx + 1 : null);
       }
-    }, [scoreSubmitted, leaderboard, playerName, score]);
+    }, [scoreSubmitted, leaderboard, playerName]);
 
     const handleSubmitScore = () => {
       setError('');
