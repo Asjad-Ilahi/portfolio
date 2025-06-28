@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useContext, createContext, ReactNod
 import { AnimatePresence, motion } from 'framer-motion';
 import { Coins, Code, Book, PenTool, Scroll, Key, Trophy, Rocket, Star, Gamepad2, Volume2, VolumeX, ChevronRight, Mail, Github, Linkedin, Twitter } from "lucide-react";
 import Image from 'next/image';
+import { set } from "mongoose";
 
 // --- Types ---
 export type ProjectType = {
@@ -880,10 +881,11 @@ const RetroArcadePortfolioInner = () => {
   );
 
   // Start Screen Component
-  const StartScreen: React.FC = () => {
+  const StartScreen = ({ soundEnabled, setSoundEnabled, playSound }: { soundEnabled: boolean, setSoundEnabled: (v: boolean) => void, playSound: (frequency?: number, duration?: number, type?: OscillatorType) => void }) => {
     const [showBriefing, setShowBriefing] = useState(false);
     const { collectedArtifacts } = useContext(MissionContext)!;
     const startCollected = collectedArtifacts.includes("start");
+    const [hi, sethi] = useState(false);
 
     return (
       <div className="min-h-screen flex flex-col items-center justify-center relative px-2 sm:px-4">
@@ -959,6 +961,27 @@ const RetroArcadePortfolioInner = () => {
               <div className="absolute inset-0 bg-white/20 animate-ping opacity-0 group-hover:opacity-100"></div>
             </button>
           </div>
+          <div className="flex items-center justify-center mt-4">
+                                                <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                onMouseEnter={() => playSound(400, 100)}
+                className="ml-2 p-2 bg-gray-800 border-2 border-gray-600 hover:border-yellow-400 transition-colors pixel-font text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded md:ml-4"
+                aria-label={soundEnabled ? 'Disable sound' : 'Enable sound'}
+              >
+                {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+              </button>
+                                                  <button
+                onClick={() => {
+                  playSound(400, 100);
+                  sethi(!hi);
+                }}
+                className="ml-2 p-2 bg-gray-800 border-2 border-gray-600 hover:border-yellow-400 transition-colors pixel-font text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded md:ml-4 text-[14px]"
+                aria-label={soundEnabled ? 'Disable sound' : 'Enable sound'}
+              >
+                Ctrl
+              </button>
+          </div>
+
         </div>
       </div>
     );
@@ -1793,7 +1816,7 @@ const RetroArcadePortfolioInner = () => {
         {currentScreen !== 'start' && (
           <Navigation soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} playSound={playSound} />
         )}
-        {currentScreen === 'start' && <StartScreen />}
+        {currentScreen === 'start' && <StartScreen soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} playSound={playSound} />}
         {currentScreen === 'about' && <AboutScreen />}
         {currentScreen === 'projects' && <ProjectsScreen />}
         {currentScreen === 'skills' && <SkillsScreen />}
