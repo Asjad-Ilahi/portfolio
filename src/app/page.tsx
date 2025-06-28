@@ -372,7 +372,7 @@ const RetroArcadePortfolioInner = () => {
     },
     {
       id: 5,
-      title: "SunShineOnward",
+      title: "SunShine Onward",
       description: "A WordPress based taxi booking website built using custom plugins and WordPress.",
       tools: ["WordPress", "PHP", "Custom Plugin", "Maps API"],
       stars: 3,
