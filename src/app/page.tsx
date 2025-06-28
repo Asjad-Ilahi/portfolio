@@ -1365,7 +1365,7 @@ const RetroArcadePortfolioInner = () => {
               { name: 'MongoDB', img: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg' },
               { name: 'Git', img: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
               { name: 'Figma', img: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg' },
-              { name: 'Tailwind', img: 'https://img.icons8.com/?size=100&id=4PiNHtUJVbLs&format=png&color=000000' },
+              { name: 'Tailwind', img: '/tailwind.png' },
             ].map((item, index) => (
               <div
                 key={item.name}
