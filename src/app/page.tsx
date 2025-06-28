@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useContext, createContext, ReactNod
 import { AnimatePresence, motion } from 'framer-motion';
 import { Coins, Code, Book, PenTool, Scroll, Key, Trophy, Rocket, Star, Gamepad2, Volume2, VolumeX, ChevronRight, Mail, Github, Linkedin, Twitter } from "lucide-react";
 import Image from 'next/image';
-import { set } from "mongoose";
 
 // --- Types ---
 export type ProjectType = {
