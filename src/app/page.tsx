@@ -388,7 +388,7 @@ const RetroArcadePortfolioInner = () => {
 
   // Sample data
   const skills = [
-    { name: "Flutter", icon: <Image src="https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000" alt="Flutter" width={40} height={40} className="w-10 h-10" />, level: 92, color: "text-blue-400" },
+    { name: "Flutter", icon: <img src="https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000" alt="Flutter" className="w-10 h-10" />, level: 92, color: "text-blue-400" },
     { name: "Next.js", icon: <Image src="/next.svg" alt="Next.js" width={40} height={40} className="w-10 h-10" />, level: 90, color: "text-gray-400" },
     { name: "UI/UX", icon: <Image src="/ui-ux.png" alt="UI/UX" width={40} height={40} className="w-10 h-10" />, level: 88, color: "text-pink-400" },
     { name: "MERN", icon: <Image src="/logo.png" alt="MERN" width={40} height={40} className="w-10 h-10" />, level: 89, color: "text-green-400" },
