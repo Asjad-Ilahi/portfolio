@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useRef, useContext, createContext, ReactNode } from "react";
+import React, { useState, useEffect, useRef, useContext, createContext, ReactNode, useCallback } from "react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { Coins, Code, Book, PenTool, Scroll, Key, Trophy, Rocket, Star, Gamepad2, Volume2, VolumeX, ChevronRight, Mail, Github, Linkedin, Twitter } from "lucide-react";
 import Image from 'next/image';
@@ -215,12 +215,12 @@ const RetroArcadePortfolioInner = () => {
 
   // Easter Egg: Konami Code
   const [konamiCode, setKonamiCode] = useState<string[]>([]);
-  const konamiSequence = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+  const konamiSequence = React.useMemo(() => ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'], []);
 
   const { konamiActivated, setKonamiActivated, interactCard } = useContext(MissionContext)!;
 
   // Play retro sound effect
-  const playSound = (frequency = 440, duration = 200, type: OscillatorType = 'square') => {
+  const playSound = useCallback((frequency = 440, duration = 200, type: OscillatorType = 'square') => {
     if (!soundEnabled || !audioContextRef.current) return;
     const oscillator = audioContextRef.current.createOscillator();
     const gainNode = audioContextRef.current.createGain();
@@ -232,7 +232,7 @@ const RetroArcadePortfolioInner = () => {
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration / 1000);
     oscillator.start(audioContextRef.current.currentTime);
     oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
-  };
+  }, [soundEnabled]);
 
   useEffect(() => {
     const handleKonamiCode = (e: KeyboardEvent) => {
@@ -388,7 +388,7 @@ const RetroArcadePortfolioInner = () => {
 
   // Sample data
   const skills = [
-    { name: "Flutter", icon: <img src="https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000" alt="Flutter" className="w-10 h-10" />, level: 92, color: "text-blue-400" },
+    { name: "Flutter", icon: <Image src="https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000" alt="Flutter" width={40} height={40} className="w-10 h-10" />, level: 92, color: "text-blue-400" },
     { name: "Next.js", icon: <Image src="/next.svg" alt="Next.js" width={40} height={40} className="w-10 h-10" />, level: 90, color: "text-gray-400" },
     { name: "UI/UX", icon: <Image src="/ui-ux.png" alt="UI/UX" width={40} height={40} className="w-10 h-10" />, level: 88, color: "text-pink-400" },
     { name: "MERN", icon: <Image src="/logo.png" alt="MERN" width={40} height={40} className="w-10 h-10" />, level: 89, color: "text-green-400" },
@@ -638,7 +638,7 @@ const RetroArcadePortfolioInner = () => {
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-cyan-500 to-purple-500"></div>
             <div className="space-y-6">
               <h3 className="text-3xl text-yellow-400 animate-pulse">🎉 MISSION COMPLETE 🎉</h3>
-              <p className="text-white">You've unlocked the secret vault!</p>
+              <p className="text-white">You&apos;ve unlocked the secret vault!</p>
               <div className="text-2xl text-green-400">+5000 XP</div>
               <div className="text-cyan-400">Access granted to top-secret file...</div>
               <div className="text-lg text-yellow-300">Your Score: <span className="font-bold">{score.toLocaleString()}</span></div>
@@ -1085,9 +1085,11 @@ const RetroArcadePortfolioInner = () => {
               
               <div className="text-center mb-6">
                 <div className="w-40 h-40 mx-auto bg-gradient-to-br from-cyan-400 to-purple-500 border-4 border-white mb-4 relative overflow-hidden flex items-center justify-center">
-                  <img
+                  <Image
                     src="/profile.png"
                     alt="Asjad Ilahi profile"
+                    width={160}
+                    height={160}
                     className="w-full h-full object-cover rounded"
                     style={{ minHeight: '100%', minWidth: '100%' }}
                   />
@@ -1371,7 +1373,7 @@ const RetroArcadePortfolioInner = () => {
                 className="group bg-gray-800/80 border-2 border-gray-600 hover:border-blue-400 p-4 text-center transition-all duration-300 transform hover:scale-110 hover:rotate-3 cursor-pointer overflow-hidden text-ellipsis"
               >
                 <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
-                  <img src={item.img} alt={item.name} className="w-8 h-8 object-contain" />
+                  <Image src={item.img} alt={item.name} width={32} height={32} className="w-8 h-8 object-contain" />
                 </div>
                 <span className="text-white pixel-font text-xs group-hover:text-cyan-400 transition-colors">
                   {item.name}
@@ -1499,7 +1501,7 @@ const RetroArcadePortfolioInner = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, name: e.target.value})}
-                    className="w-full p-3 bg-gray-800 border-2 border-gray-600 focus:border-yellow-400 text-white pixel-font outline-none transition-colors"
+                    className="w-full p-3 bg-gray-800 border-2 border-gray-600 focus:border-yellow-400 text-white pixel-font outline-none"
                     required
                   />
                 </div>
@@ -1509,7 +1511,7 @@ const RetroArcadePortfolioInner = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, email: e.target.value})}
-                    className="w-full p-3 bg-gray-800 border-2 border-gray-600 focus:border-yellow-400 text-white pixel-font outline-none transition-colors"
+                    className="w-full p-3 bg-gray-800 border-2 border-gray-600 focus:border-yellow-400 text-white pixel-font outline-none"
                     required
                   />
                 </div>

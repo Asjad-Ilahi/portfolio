@@ -1,11 +1,3 @@
-import { AudioContextType } from '@/types';
-
-declare global {
-  interface Window {
-    webkitAudioContext: typeof AudioContext;
-  }
-}
-
 interface Project {
   id: number;
   title: string;
@@ -22,4 +14,11 @@ export interface LeaderboardEntry {
   timestamp: Date;
 }
 
-export type { AudioContextType, Project };
+export type AudioContextType = AudioContext | null;
+export type { Project };
+
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}

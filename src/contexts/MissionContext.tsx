@@ -105,7 +105,7 @@ export const MissionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (isMissionComplete && !missionUnlocked) {
       setMissionUnlocked(true);
     }
-  }, [collectedArtifacts, vaultCodeEntered, missionUnlocked]);
+  }, [collectedArtifacts, vaultCodeEntered, missionUnlocked, isMissionComplete]);
 
   return (
     <MissionContext.Provider value={{
