@@ -25,7 +25,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    let { name, score } = body;
+    const name = body.name;
+    let score = body.score;
     // Ensure score is a number (parse if string)
     score = typeof score === 'string' ? Number(score) : score;
     if (!name || typeof score !== 'number' || isNaN(score)) {

@@ -78,6 +78,7 @@ const MissionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const data = await res.json();
       setLeaderboard(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.log('Error fetching leaderboard:', err);
       setLeaderboard([]);
     }
   };
@@ -92,6 +93,8 @@ const MissionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       if (!res.ok) throw new Error('Failed to save score');
       await fetchLeaderboard();
     } catch (err) {
+            console.log('Error fetching leaderboard:', err);
+
       // Optionally handle error
     }
   };
@@ -216,7 +219,6 @@ const VaultOpeningSequence: React.FC<{ onComplete: () => void }> = ({ onComplete
 const RetroArcadePortfolioInner = () => {
   const [currentScreen, setCurrentScreen] = useState('start');
   const [soundEnabled, setSoundEnabled] = useState(false);
-  const [scanlines, setScanlines] = useState(true);
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -463,10 +465,6 @@ const RetroArcadePortfolioInner = () => {
           }}
         ></div>
       ))}
-      {scanlines && (
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent bg-repeat-y animate-pulse opacity-30"
-             style={{ backgroundSize: '100% 4px' }}></div>
-      )}
     </div>
   );
 
@@ -884,6 +882,8 @@ const RetroArcadePortfolioInner = () => {
   // Start Screen Component
   const StartScreen: React.FC = () => {
     const [showBriefing, setShowBriefing] = useState(false);
+    const { collectedArtifacts } = useContext(MissionContext)!;
+    const startCollected = collectedArtifacts.includes("start");
 
     return (
       <div className="min-h-screen flex flex-col items-center justify-center relative px-2 sm:px-4">
@@ -891,28 +891,30 @@ const RetroArcadePortfolioInner = () => {
         {/* Artifact for start page */}
         <HiddenArtifact section="start" />
         {/* Pointer and hint for the first artifact */}
-        <div
-          className="absolute z-[1100] flex flex-col items-center"
-          style={{
-            top: "79%",
-            left: "19%",
-            transform: "translate(-50%, -100%)",
-            pointerEvents: "none"
-          }}
-        >
-          <div className="py-1 mb-1 text-xs pixel-font text-yellow-100 whitespace-nowrap">
-            Collect!
-          </div>
-          <motion.div
-            initial={{ y: -10 }}
-            animate={{ y: [ -10, 0, -10 ] }}
-            transition={{ repeat: Infinity, duration: 1.2 }}
-            className="text-yellow-300"
-            style={{ fontSize: 32, lineHeight: 1 }}
+        {!startCollected && (
+          <div
+            className="absolute z-[1100] flex flex-col items-center"
+            style={{
+              top: "79%",
+              left: "19%",
+              transform: "translate(-50%, -100%)",
+              pointerEvents: "none"
+            }}
           >
-            ↓
-          </motion.div>
-        </div>
+            <div className="py-1 mb-1 text-xs pixel-font text-yellow-100 whitespace-nowrap">
+              Collect!
+            </div>
+            <motion.div
+              initial={{ y: -10 }}
+              animate={{ y: [ -10, 0, -10 ] }}
+              transition={{ repeat: Infinity, duration: 1.2 }}
+              className="text-yellow-300"
+              style={{ fontSize: 32, lineHeight: 1 }}
+            >
+              ↓
+            </motion.div>
+          </div>
+        )}
         {/* Floating Question Mark Button */}
         <button
           className="fixed bottom-4 right-4 z-30 bg-yellow-400 hover:bg-yellow-300 text-black rounded-full w-10 h-10 flex items-center justify-center shadow-lg border-2 border-yellow-600 animate-bounce"
@@ -956,23 +958,6 @@ const RetroArcadePortfolioInner = () => {
               </span>
               <div className="absolute inset-0 bg-white/20 animate-ping opacity-0 group-hover:opacity-100"></div>
             </button>
-
-            <div className="flex justify-center space-x-2 sm:space-x-4">
-              <button
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                onMouseEnter={() => playSound(400, 100)}
-                className="p-2 sm:p-3 bg-gray-800 border-2 border-gray-600 hover:border-yellow-400 transition-colors pixel-font text-white hover:bg-gray-700"
-              >
-                {soundEnabled ? <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" />}
-              </button>
-              <button
-                onClick={() => setScanlines(!scanlines)}
-                onMouseEnter={() => playSound(400, 100)}
-                className="p-2 sm:p-3 bg-gray-800 border-2 border-gray-600 hover:border-yellow-400 transition-colors pixel-font text-white hover:bg-gray-700"
-              >
-                CRT
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -980,7 +965,7 @@ const RetroArcadePortfolioInner = () => {
   };
 
   // Navigation Component
-  const Navigation = () => {
+  const Navigation = ({ soundEnabled, setSoundEnabled, playSound }: { soundEnabled: boolean, setSoundEnabled: (v: boolean) => void, playSound: (frequency?: number, duration?: number, type?: OscillatorType) => void }) => {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const navItems = [
@@ -1032,8 +1017,19 @@ const RetroArcadePortfolioInner = () => {
                 </button>
               ))}
             </div>
-            <div className="text-yellow-400 pixel-font text-xs xs:text-sm md:text-base">
-              SCORE: {score.toLocaleString()}
+            {/* Score and sound button always visible, flex-row for all screens */}
+            <div className="flex items-center space-x-2">
+              <div className="text-yellow-400 pixel-font text-xs xs:text-sm md:text-base">
+                SCORE: {score.toLocaleString()}
+              </div>
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                onMouseEnter={() => playSound(400, 100)}
+                className="ml-2 p-2 bg-gray-800 border-2 border-gray-600 hover:border-yellow-400 transition-colors pixel-font text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded md:ml-4"
+                aria-label={soundEnabled ? 'Disable sound' : 'Enable sound'}
+              >
+                {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+              </button>
             </div>
           </div>
           <AnimatePresence>
@@ -1069,6 +1065,15 @@ const RetroArcadePortfolioInner = () => {
                       {item.label}
                     </button>
                   ))}
+                  {/* Sound button for mobile menu, always after score */}
+                  <button
+                    onClick={() => setSoundEnabled(!soundEnabled)}
+                    onMouseEnter={() => playSound(400, 100)}
+                    className="mt-2 p-2 bg-gray-800 border-2 border-gray-600 hover:border-yellow-400 transition-colors pixel-font text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded"
+                    aria-label={soundEnabled ? 'Disable sound' : 'Enable sound'}
+                  >
+                    {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                  </button>
                 </div>
               </motion.div>
             )}
@@ -1490,7 +1495,7 @@ const RetroArcadePortfolioInner = () => {
         });
         if (!res.ok) throw new Error('Failed to send email');
         return true;
-      } catch (err) {
+      } catch {
         return false;
       }
     };
@@ -1507,7 +1512,7 @@ const RetroArcadePortfolioInner = () => {
         setIsSubmitting(false);
         setFormData({ name: '', email: '', message: '' });
         setTimeout(() => setShowSuccess(false), 3000);
-      } else {
+           } else {
         setIsSubmitting(false);
         setError('Failed to send message. Please try again.');
       }
@@ -1793,8 +1798,9 @@ const RetroArcadePortfolioInner = () => {
           }
         `}</style>
 
-        {currentScreen !== 'start' && <Navigation />}
-        
+        {currentScreen !== 'start' && (
+          <Navigation soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} playSound={playSound} />
+        )}
         {currentScreen === 'start' && <StartScreen />}
         {currentScreen === 'about' && <AboutScreen />}
         {currentScreen === 'projects' && <ProjectsScreen />}
