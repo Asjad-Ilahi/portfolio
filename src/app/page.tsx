@@ -1066,14 +1066,6 @@ const RetroArcadePortfolioInner = () => {
                     </button>
                   ))}
                   {/* Sound button for mobile menu, always after score */}
-                  <button
-                    onClick={() => setSoundEnabled(!soundEnabled)}
-                    onMouseEnter={() => playSound(400, 100)}
-                    className="mt-2 p-2 bg-gray-800 border-2 border-gray-600 hover:border-yellow-400 transition-colors pixel-font text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded"
-                    aria-label={soundEnabled ? 'Disable sound' : 'Enable sound'}
-                  >
-                    {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-                  </button>
                 </div>
               </motion.div>
             )}
