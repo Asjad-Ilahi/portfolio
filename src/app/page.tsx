@@ -71,13 +71,33 @@ const MissionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     }
     return false;
   };
-
-  const addToLeaderboard = (name: string, score: number) => {
-    const newEntry = { name: name || 'Unknown Agent', score, timestamp: Date.now() };
-    const updatedLeaderboard = [...leaderboard, newEntry].sort((a, b) => b.score - a.score).slice(0, 10);
-    setLeaderboard(updatedLeaderboard);
-    localStorage.setItem('leaderboard', JSON.stringify(updatedLeaderboard));
+    const fetchLeaderboard = async () => {
+    try {
+      const res = await fetch('/api/leaderboard');
+      if (!res.ok) throw new Error('Failed to fetch leaderboard');
+      const data = await res.json();
+      setLeaderboard(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setLeaderboard([]);
+    }
   };
+
+  const addToLeaderboard = async (name: string, score: number) => {
+    try {
+      const res = await fetch('/api/leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name || 'Unknown Agent', score }),
+      });
+      if (!res.ok) throw new Error('Failed to save score');
+      await fetchLeaderboard();
+    } catch (err) {
+      // Optionally handle error
+    }
+  };
+    useEffect(() => {
+    fetchLeaderboard();
+  }, []);
 
   const isMissionComplete = collectedArtifacts.length === 6 && vaultCodeEntered;
 
@@ -1458,19 +1478,39 @@ const RetroArcadePortfolioInner = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    // Email sending function
+    const sendEmail = async (data: { name: string; email: string; message: string }) => {
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('Failed to send email');
+        return true;
+      } catch (err) {
+        return false;
+      }
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setIsSubmitting(true);
+      setError('');
       playSound(1000, 300, 'triangle');
-      
-      setTimeout(() => {
+      const success = await sendEmail(formData);
+      if (success) {
         setShowSuccess(true);
         setScore(prev => prev + 500);
         setIsSubmitting(false);
         setFormData({ name: '', email: '', message: '' });
         setTimeout(() => setShowSuccess(false), 3000);
-      }, 1500);
+      } else {
+        setIsSubmitting(false);
+        setError('Failed to send message. Please try again.');
+      }
     };
 
     return (
@@ -1505,7 +1545,7 @@ const RetroArcadePortfolioInner = () => {
                     required
                   />
                 </div>
-                               <div>
+                <div>
                   <label className="block text-white pixel-font mb-2">EMAIL</label>
                   <input
                     type="email"
@@ -1524,6 +1564,7 @@ const RetroArcadePortfolioInner = () => {
                     required
                   ></textarea>
                 </div>
+                {error && <div className="text-red-400 pixel-font text-xs">{error}</div>}
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -1546,7 +1587,7 @@ const RetroArcadePortfolioInner = () => {
                         <span>SEND TRANSMISSION</span>
                       </>
                     )}
-                                   </span>
+                  </span>
                 </button>
               </form>
             </div>
@@ -1558,37 +1599,57 @@ const RetroArcadePortfolioInner = () => {
                 <h3 className="text-xl font-bold text-purple-400 pixel-font mb-6">DIRECT CHANNELS</h3>
 
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-4 p-3 bg-gray-800/50 border-2 border-gray-600 hover:border-cyan-400 transition-colors cursor-pointer group">
+                  <a
+                    href="mailto:asjadilahi01@gmail.com"
+                    className="flex items-center space-x-4 p-3 bg-gray-800/50 border-2 border-gray-600 hover:border-cyan-400 transition-colors cursor-pointer group"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Mail className="w-6 h-6 text-cyan-400 group-hover:animate-bounce" />
                     <div>
                       <p className="text-white pixel-font">EMAIL</p>
-                      <p className="text-gray-300 text-sm">alex@developer.com</p>
+                      <p className="text-gray-300 text-sm">asjadilahi01@gmail.com</p>
                     </div>
-                  </div>
+                  </a>
 
-                  <div className="flex items-center space-x-4 p-3 bg-gray-800/50 border-2 border-gray-600 hover:border-cyan-400 transition-colors cursor-pointer group">
+                  <a
+                    href="https://github.com/asjad-ilahi"
+                    className="flex items-center space-x-4 p-3 bg-gray-800/50 border-2 border-gray-600 hover:border-cyan-400 transition-colors cursor-pointer group"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Github className="w-6 h-6 text-cyan-400 group-hover:animate-bounce" />
                     <div>
                       <p className="text-white pixel-font">GITHUB</p>
-                      <p className="text-gray-300 text-sm">github.com/alexdev</p>
+                      <p className="text-gray-300 text-sm">github.com/asjad-ilahi</p>
                     </div>
-                  </div>
+                  </a>
 
-                  <div className="flex items-center space-x-4 p-3 bg-gray-800/50 border-2 border-gray-600 hover:border-cyan-400 transition-colors cursor-pointer group">
+                  <a
+                    href="https://www.linkedin.com/in/asjad-ilahi"
+                    className="flex items-center space-x-4 p-3 bg-gray-800/50 border-2 border-gray-600 hover:border-cyan-400 transition-colors cursor-pointer group"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Linkedin className="w-6 h-6 text-cyan-400 group-hover:animate-bounce" />
                     <div>
                       <p className="text-white pixel-font">LINKEDIN</p>
-                      <p className="text-gray-300 text-sm">linkedin.com/in/alexdev</p>
+                      <p className="text-gray-300 text-sm">linkedin.com/in/asjad-ilahi</p>
                     </div>
-                  </div>
+                  </a>
 
-                  <div className="flex items-center space-x-4 p-3 bg-gray-800/50 border-2 border-gray-600 hover:border-cyan-400 transition-colors cursor-pointer group">
+                  <a
+                    href="https://twitter.com/asjad13851"
+                    className="flex items-center space-x-4 p-3 bg-gray-800/50 border-2 border-gray-600 hover:border-cyan-400 transition-colors cursor-pointer group"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Twitter className="w-6 h-6 text-cyan-400 group-hover:animate-bounce" />
                     <div>
                       <p className="text-white pixel-font">TWITTER</p>
-                      <p className="text-gray-300 text-sm">@alexdev</p>
+                      <p className="text-gray-300 text-sm">@asjad13851</p>
                     </div>
-                  </div>
+                  </a>
                 </div>
               </div>
 
