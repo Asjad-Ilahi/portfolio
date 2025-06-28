@@ -1,41 +1,80 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
-import { ChevronRight, Mail, Github, Linkedin, Twitter, Volume2, VolumeX, Star, Zap, Shield, Gamepad2, Trophy, Code, Database, Palette, Rocket, Coins, Book, PenTool, Scroll, Key } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useContext, createContext, ReactNode } from "react";
+import { AnimatePresence, motion } from 'framer-motion';
+import { Coins, Code, Book, PenTool, Scroll, Key, Trophy, Rocket, Star, Gamepad2, Volume2, VolumeX, ChevronRight, Mail, Github, Linkedin, Twitter } from "lucide-react";
+import Image from 'next/image';
 
-// Create Context for Mission State
-const MissionContext = createContext();
+// --- Types ---
+export type ProjectType = {
+  id: number;
+  title: string;
+  description: string;
+  tools: string[];
+  stars: number;
+  level: string;
+  color: string;
+  live: string | null;
+  code: string | null;
+};
 
-const MissionProvider = ({ children }) => {
-  const [collectedArtifacts, setCollectedArtifacts] = useState([]);
+// Types
+export type ArtifactSection = 'start' | 'about' | 'projects' | 'skills' | 'contact' | 'experience';
+export type MissionContextType = {
+  collectedArtifacts: ArtifactSection[];
+  collectArtifact: (section: ArtifactSection) => void;
+  missionUnlocked: boolean;
+  setMissionUnlocked: React.Dispatch<React.SetStateAction<boolean>>;
+  playerName: string;
+  setPlayerName: React.Dispatch<React.SetStateAction<string>>;
+  missionAccepted: boolean;
+  setMissionAccepted: React.Dispatch<React.SetStateAction<boolean>>;
+  terminalCode: string;
+  setTerminalCode: React.Dispatch<React.SetStateAction<string>>;
+  vaultCodeEntered: boolean;
+  setVaultCodeEntered: React.Dispatch<React.SetStateAction<boolean>>;
+  isMissionComplete: boolean;
+  interactedCards: string[];
+  interactCard: (cardId: string) => boolean;
+  konamiActivated: boolean;
+  setKonamiActivated: React.Dispatch<React.SetStateAction<boolean>>;
+  leaderboard: { name: string; score: number; timestamp: number }[];
+  addToLeaderboard: (name: string, score: number) => void;
+  vaultClosed: boolean;
+  setVaultClosed: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const MissionContext = createContext<MissionContextType | undefined>(undefined);
+
+const MissionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [collectedArtifacts, setCollectedArtifacts] = useState<ArtifactSection[]>([]);
   const [missionUnlocked, setMissionUnlocked] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [missionAccepted, setMissionAccepted] = useState(false);
   const [terminalCode, setTerminalCode] = useState('');
   const [vaultCodeEntered, setVaultCodeEntered] = useState(false);
-  const [interactedCards, setInteractedCards] = useState([]);
+  const [interactedCards, setInteractedCards] = useState<string[]>([]);
   const [konamiActivated, setKonamiActivated] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [vaultClosed, setVaultClosed] = useState(false); // New state for vault closure
+  const [leaderboard, setLeaderboard] = useState<{ name: string; score: number; timestamp: number }[]>([]);
+  const [vaultClosed, setVaultClosed] = useState(false);
 
-  const collectArtifact = (section) => {
+  const collectArtifact = (section: ArtifactSection) => {
     if (!collectedArtifacts.includes(section)) {
       setCollectedArtifacts([...collectedArtifacts, section]);
     }
   };
 
-  const interactCard = (cardId) => {
+  const interactCard = (cardId: string) => {
     if (!interactedCards.includes(cardId)) {
       setInteractedCards([...interactedCards, cardId]);
-      return true; // Indicates points should be awarded
+      return true;
     }
     return false;
   };
 
-  const addToLeaderboard = (name, score) => {
+  const addToLeaderboard = (name: string, score: number) => {
     const newEntry = { name: name || 'Unknown Agent', score, timestamp: Date.now() };
-    const updatedLeaderboard = [...leaderboard, newEntry].sort((a, b) => b.score - a.score).slice(0, 10); // Top 10
+    const updatedLeaderboard = [...leaderboard, newEntry].sort((a, b) => b.score - a.score).slice(0, 10);
     setLeaderboard(updatedLeaderboard);
     localStorage.setItem('leaderboard', JSON.stringify(updatedLeaderboard));
   };
@@ -46,9 +85,8 @@ const MissionProvider = ({ children }) => {
     if (isMissionComplete && !missionUnlocked) {
       setMissionUnlocked(true);
     }
-  }, [collectedArtifacts, vaultCodeEntered, missionUnlocked]);
+  }, [collectedArtifacts, vaultCodeEntered, missionUnlocked, isMissionComplete]);
 
-  // Load leaderboard from localStorage on mount
   useEffect(() => {
     const savedLeaderboard = localStorage.getItem('leaderboard');
     if (savedLeaderboard) {
@@ -62,7 +100,7 @@ const MissionProvider = ({ children }) => {
       playerName, setPlayerName, missionAccepted, setMissionAccepted,
       terminalCode, setTerminalCode, vaultCodeEntered, setVaultCodeEntered, isMissionComplete,
       interactedCards, interactCard, konamiActivated, setKonamiActivated,
-      leaderboard, addToLeaderboard, vaultClosed, setVaultClosed // Provide vaultClosed state
+      leaderboard, addToLeaderboard, vaultClosed, setVaultClosed
     }}>
       {children}
     </MissionContext.Provider>
@@ -70,8 +108,8 @@ const MissionProvider = ({ children }) => {
 };
 
 // Vault Opening Sequence Component
-const VaultOpeningSequence = ({ onComplete }) => {
-  const [phase, setPhase] = useState('cutscene');
+const VaultOpeningSequence: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
+  const [phase, setPhase] = useState<'cutscene' | 'vault'>('cutscene');
 
   useEffect(() => {
     const phaseTimeout = setTimeout(() => {
@@ -159,13 +197,13 @@ const RetroArcadePortfolioInner = () => {
   const [currentScreen, setCurrentScreen] = useState('start');
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [scanlines, setScanlines] = useState(true);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const audioContextRef = useRef(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [score, setScore] = useState(0);
   const [showKonamiPopup, setShowKonamiPopup] = useState(false);
   const [showKonamiSuccess, setShowKonamiSuccess] = useState(false);
-  const [visitedScreens, setVisitedScreens] = useState([]);
+  const [visitedScreens, setVisitedScreens] = useState<string[]>([]);
 
   // Initialize audio context
   useEffect(() => {
@@ -176,12 +214,13 @@ const RetroArcadePortfolioInner = () => {
   }, []);
 
   // Easter Egg: Konami Code
-  const [konamiCode, setKonamiCode] = useState([]);
+  const [konamiCode, setKonamiCode] = useState<string[]>([]);
   const konamiSequence = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-  const { konamiActivated, setKonamiActivated, interactCard } = useContext(MissionContext);
+
+  const { konamiActivated, setKonamiActivated, interactCard } = useContext(MissionContext)!;
 
   useEffect(() => {
-    const handleKonamiCode = (e) => {
+    const handleKonamiCode = (e: KeyboardEvent) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         const newSequence = [...konamiCode, e.code].slice(-konamiSequence.length);
         setKonamiCode(newSequence);
@@ -203,7 +242,7 @@ const RetroArcadePortfolioInner = () => {
   }, [konamiCode, soundEnabled, konamiActivated]);
 
   // Play retro sound effect
-  const playSound = (frequency = 440, duration = 200, type = 'square') => {
+  const playSound = (frequency = 440, duration = 200, type: OscillatorType = 'square') => {
     if (!soundEnabled || !audioContextRef.current) return;
     
     const oscillator = audioContextRef.current.createOscillator();
@@ -223,7 +262,7 @@ const RetroArcadePortfolioInner = () => {
   };
 
   // Award score for tab change only once
-  const handleNavigation = (screen) => {
+  const handleNavigation = (screen: string) => {
     playSound(800, 150);
     setCurrentScreen(screen);
     if (!visitedScreens.includes(screen)) {
@@ -232,7 +271,7 @@ const RetroArcadePortfolioInner = () => {
     }
   };
 
-  const handleProjectClick = (project) => {
+  const handleProjectClick = (project: ProjectType) => {
     playSound(1200, 200, 'triangle');
     setSelectedProject(project);
     if (interactCard(`project-${project.id}`)) {
@@ -337,7 +376,7 @@ const RetroArcadePortfolioInner = () => {
     }
   ];
   // Shuffle within each group for variety
-  function shuffle(array) {
+  function shuffle<T>(array: T[]): T[] {
     let arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -354,9 +393,9 @@ const RetroArcadePortfolioInner = () => {
   // Sample data
   const skills = [
     { name: "Flutter", icon: <img src="https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000" alt="Flutter" className="w-10 h-10" />, level: 92, color: "text-blue-400" },
-    { name: "Next.js", icon: <img src="/next.svg" alt="Next.js" className="w-10 h-10" />, level: 90, color: "text-gray-400" },
-    { name: "UI/UX", icon: <img src="/ui-ux.png" alt="UI/UX" className="w-10 h-10" />, level: 88, color: "text-pink-400" },
-    { name: "MERN", icon: <img src="/logo.png" alt="MERN" className="w-10 h-10" />, level: 89, color: "text-green-400" },
+    { name: "Next.js", icon: <Image src="/next.svg" alt="Next.js" width={40} height={40} className="w-10 h-10" />, level: 90, color: "text-gray-400" },
+    { name: "UI/UX", icon: <Image src="/ui-ux.png" alt="UI/UX" width={40} height={40} className="w-10 h-10" />, level: 88, color: "text-pink-400" },
+    { name: "MERN", icon: <Image src="/logo.png" alt="MERN" width={40} height={40} className="w-10 h-10" />, level: 89, color: "text-green-400" },
   ];
 
   const experience = [
@@ -417,7 +456,7 @@ const RetroArcadePortfolioInner = () => {
 
   // Mission Progress HUD Component
   const MissionProgressHUD = () => {
-    const { collectedArtifacts, vaultCodeEntered } = useContext(MissionContext);
+    const { collectedArtifacts, vaultCodeEntered } = useContext(MissionContext)!;
     return (collectedArtifacts.length > 0 || vaultCodeEntered) && (
       <motion.div
         initial={{ opacity: 0, y: 50 }}
@@ -439,17 +478,17 @@ const RetroArcadePortfolioInner = () => {
   };
 
   // Hidden Artifact Component
-  const HiddenArtifact = ({ section }) => {
-    const { collectArtifact, collectedArtifacts } = useContext(MissionContext);
+  const HiddenArtifact: React.FC<{ section: ArtifactSection }> = ({ section }) => {
+    const { collectArtifact, collectedArtifacts } = useContext(MissionContext)!;
     const isCollected = collectedArtifacts.includes(section);
 
     const artifactIcons = {
       start: <Coins className="w-8 h-8 text-yellow-500 animate-pulse" />,
       about: <Book className="w-8 h-8 text-yellow-500 animate-pulse" />,
-      projects: <PenTool className="w-8 h-8 text-yellow-500 animate-pulse" />,
-      skills: <Scroll className="w-8 h-8 text-yellow-500 animate-pulse" />,
+      projects: <PenTool className="w-8 h-8 text-red-500 animate-pulse" />,
+      skills: <Scroll className="w-8 h-8 text-red-500 animate-pulse" />,
       contact: <Key className="w-8 h-8 text-yellow-500 animate-pulse" />,
-      experience: <Trophy className="w-8 h-8 text-yellow-500 animate-pulse" />
+      experience: <Trophy className="w-8 h-8 text-green-500 animate-pulse" />,
     };
 
     if (isCollected) return null;
@@ -481,11 +520,11 @@ const RetroArcadePortfolioInner = () => {
   };
 
   // Terminal Puzzle Component
-  const TerminalPuzzle = ({ setShowTerminal }) => {
-    const { terminalCode, setTerminalCode, setVaultCodeEntered } = useContext(MissionContext);
+  const TerminalPuzzle: React.FC<{ setShowTerminal: (show: boolean) => void }> = ({ setShowTerminal }) => {
+    const { terminalCode, setTerminalCode, setVaultCodeEntered } = useContext(MissionContext)!;
     const correctCode = 'APPLES';
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (terminalCode.toUpperCase() === correctCode) {
         playSound(1500, 300, 'triangle');
@@ -518,7 +557,7 @@ const RetroArcadePortfolioInner = () => {
           <h3 className="text-2xl text-green-400 mb-4">DECRYPT ACCESS KEY</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center space-x-2">
-              <span className="text-green-400">></span>
+              <span className="text-green-400">{'>'}</span>
               <input
                 type="text"
                 value={terminalCode}
@@ -549,12 +588,12 @@ const RetroArcadePortfolioInner = () => {
       missionUnlocked, setMissionUnlocked, playerName, setPlayerName,
       isMissionComplete, addToLeaderboard, leaderboard,
       vaultClosed, setVaultClosed
-    } = useContext(MissionContext);
+    } = useContext(MissionContext)!;
     const [isOpen, setIsOpen] = useState(false);
     const [showSequence, setShowSequence] = useState(false);
     const [scoreSubmitted, setScoreSubmitted] = useState(false);
     const [error, setError] = useState('');
-    const [userRank, setUserRank] = useState(null);
+    const [userRank, setUserRank] = useState<number | null>(null);
 
     useEffect(() => {
       if (missionUnlocked && !vaultClosed) {
@@ -674,7 +713,7 @@ const RetroArcadePortfolioInner = () => {
 
   // Konami Code Popup Component
   const KonamiPopup = () => {
-    const { setMissionAccepted } = useContext(MissionContext);
+    const { setMissionAccepted } = useContext(MissionContext)!;
 
     return (
       <motion.div
@@ -749,7 +788,7 @@ const RetroArcadePortfolioInner = () => {
 
   // Leaderboard Screen Component
   const LeaderboardScreen = () => {
-    const { leaderboard } = useContext(MissionContext);
+    const { leaderboard } = useContext(MissionContext)!;
 
     return (
       <div className="min-h-screen pt-20 px-4 relative">
@@ -787,7 +826,7 @@ const RetroArcadePortfolioInner = () => {
   };
 
   // Mission Briefing Popup Component
-  const MissionBriefingPopup = ({ open, onClose }) => (
+  const MissionBriefingPopup: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => (
     <AnimatePresence>
       {open && (
         <motion.div
@@ -827,7 +866,7 @@ const RetroArcadePortfolioInner = () => {
   );
 
   // Start Screen Component
-  const StartScreen = () => {
+  const StartScreen: React.FC = () => {
     const [showBriefing, setShowBriefing] = useState(false);
 
     return (
@@ -1352,9 +1391,9 @@ const RetroArcadePortfolioInner = () => {
 
   // Experience Screen Component
   const ExperienceScreen = () => {
-    const { interactCard } = useContext(MissionContext);
+    const { interactCard } = useContext(MissionContext)!;
 
-    const handleTimelineClick = (index) => {
+    const handleTimelineClick = (index: number) => {
       if (interactCard(`experience-${index}`)) {
         setScore(prev => prev + 100);
       }
@@ -1417,12 +1456,12 @@ const RetroArcadePortfolioInner = () => {
   };
 
   // Contact Screen Component
-  const ContactScreen = () => {
+  const ContactScreen: React.FC = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setIsSubmitting(true);
       playSound(1000, 300, 'triangle');
@@ -1463,17 +1502,17 @@ const RetroArcadePortfolioInner = () => {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, name: e.target.value})}
                     className="w-full p-3 bg-gray-800 border-2 border-gray-600 focus:border-yellow-400 text-white pixel-font outline-none transition-colors"
                     required
                   />
                 </div>
-                <div>
+                               <div>
                   <label className="block text-white pixel-font mb-2">EMAIL</label>
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, email: e.target.value})}
                     className="w-full p-3 bg-gray-800 border-2 border-gray-600 focus:border-yellow-400 text-white pixel-font outline-none transition-colors"
                     required
                   />
@@ -1482,7 +1521,7 @@ const RetroArcadePortfolioInner = () => {
                   <label className="block text-white pixel-font mb-2">MESSAGE</label>
                   <textarea
                     value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, message: e.target.value})}
                     className="w-full p-3 bg-gray-800 border-2 border-gray-600 focus:border-yellow-400 text-white pixel-font outline-none transition-colors h-32 resize-none"
                     required
                   ></textarea>
@@ -1625,13 +1664,8 @@ const RetroArcadePortfolioInner = () => {
 
   // Main Render
   if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-cyan-400 text-2xl pixel-font animate-pulse">LOADING...</div>
-      </div>
-    );
+    return null;
   }
-
   return (
     <MissionProvider>
       <div className="min-h-screen bg-black text-white font-mono relative overflow-x-hidden">
@@ -1721,12 +1755,11 @@ const RetroArcadePortfolioInner = () => {
   );
 };
 
-const RetroArcadePortfolio = () => {
-  return (
-    <MissionProvider>
-      <RetroArcadePortfolioInner />
-    </MissionProvider>
-  );
-};
+// Main export: wrap with MissionProvider
+const RetroArcadePortfolio = () => (
+  <MissionProvider>
+    <RetroArcadePortfolioInner />
+  </MissionProvider>
+);
 
 export default RetroArcadePortfolio;
