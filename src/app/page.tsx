@@ -388,7 +388,7 @@ const RetroArcadePortfolioInner = () => {
 
   // Sample data
   const skills = [
-    { name: "Flutter", icon: <Image src="https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000" alt="Flutter" width={40} height={40} className="w-10 h-10" />, level: 92, color: "text-blue-400" },
+    { name: "Flutter", icon: <Image src="/flutter.png" alt="Flutter" width={40} height={40} className="w-10 h-10" />, level: 92, color: "text-blue-400" },
     { name: "Next.js", icon: <Image src="/next.svg" alt="Next.js" width={40} height={40} className="w-10 h-10" />, level: 90, color: "text-gray-400" },
     { name: "UI/UX", icon: <Image src="/ui-ux.png" alt="UI/UX" width={40} height={40} className="w-10 h-10" />, level: 88, color: "text-pink-400" },
     { name: "MERN", icon: <Image src="/logo.png" alt="MERN" width={40} height={40} className="w-10 h-10" />, level: 89, color: "text-green-400" },
@@ -1350,7 +1350,7 @@ const RetroArcadePortfolioInner = () => {
           <h3 className="text-2xl font-bold text-purple-400 pixel-font mb-6 text-center">INVENTORY</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {[
-              { name: 'Flutter', img: 'https://img.icons8.com/?size=100&id=7I3BjCqe9rjG&format=png&color=000000' },
+              { name: 'Flutter', img: '/flutter.png' },
               { name: 'Dart', img: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dart/dart-original.svg' },
               { name: 'Unity', img: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg' },
               { name: 'Firebase', img: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg' },
